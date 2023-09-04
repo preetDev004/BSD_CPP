@@ -1,0 +1,270 @@
+
+-------------------------------------------------
+******************* Learnings *******************
+-------------------------------------------------
+
+1) class type: 
+            Before this workshop we were using struct type to combine defferent types of data.
+            However, we used a new type called class in this workshop.
+            In structure all members/attributes are public by default but in class type all
+            members/attributes are private by default.
+
+2) Privatize Data in a class:
+            I learned about the labling on the members of a class. 
+            All the members/attributes under "Private:" lable are private 
+            means only that class's Public members can access it and change it.
+            Which improves the encapsulation and do not allow user/client to access it.
+
+            for example, in food module,
+                private:
+                    char m_foodName[FOOD_NAME + 1];
+                    int m_cal;
+                    int m_when; 
+
+3) Initiating an Object from a class type:
+            It is the same as we have to do for structures. 
+            - In struct type, 
+             
+                structName objName;
+
+            - In class type:
+
+                className objName;
+
+            - In this workshop we did, Item* m_items; in bill module.    
+
+
+4) Accessing private data through public members:
+            Making data holding variables private so no-one can manually change it but by using public
+            functions who have the access to it change it according to the value.
+
+            here,
+
+            char m_name[WIDTH_NAME + 1];
+            double m_price;
+            bool m_isTaxed;
+
+            - are private so we cannot change it out of the class directly but using that class's 
+              public member set function we changed it's value for a perticular object.
+
+            bool Item::set(const char *name, double price, bool isTaxed)
+            {
+                if ((name != nullptr && (strlen(name) > 0)) && (price > 0))
+                {
+                    strcpy(m_name, name);
+                    m_name[WIDTH_NAME] = '\0';
+                    m_price = price;
+                    m_isTaxed = isTaxed;
+
+                    return true;
+                }
+                else
+                {
+                    init();
+                    return false;
+                }
+            }
+
+5) Formatting output stream:
+            I also learned about diefferent new functions to do format printing like,
+
+            cout.width() 
+                ---> gives next printing line that much width(provided in argument) to print, print spaces 
+                     if total width provided is not utilized.
+
+            cout.fill()
+                ---> to fill the character(whatever provided as argument) untill the width matched
+
+            cout.precision()
+                ---> decides precision(provided in argument) to be printed for floting-point number
+
+            cout.setf()
+                ---> set the alignment of the printing to left, right and fixed.
+
+            cout.unsetf()
+                ---> unset the alignment of the printing to left, right and fixed.
+
+----------------------------------------------------
+******************* Difficulties *******************
+----------------------------------------------------
+
+1) The return value of isValid function from bill module also caused some problems.
+
+    My code was:
+
+            bool Bill::isValid() const
+            {
+                if (m_items != nullptr && m_title[0] != '\0')
+                {
+                    return true;
+                }
+                for (int i = 0; i < m_capacity; i++)
+                {
+                    if (m_items[i].isEmpty())
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        
+        - Logically i was correct and i knew what to do in this function my implementation 
+          caused the problem as i was returning true without checking validity of every record
+
+        - I spent almost 30 mins to figure out what causing the problem but when i watched variable 'i'
+          in for loop it was not changing then i realised the faulty condition.
+
+    Debugged Code:
+
+            bool Bill::isValid() const
+            {
+                if (m_items == nullptr && m_title[0] == '\0')
+                {
+                    return false;
+                }
+                for (int i = 0; i < m_capacity; i++)
+                {
+                    if (m_items[i].isEmpty())
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            } 
+
+2) The first problem i had was in ITEM module (Item.cpp) where i defined my set function.
+   My set function was:
+            bool Item::set(const char *name, double price, bool isTaxed)
+            {
+                if ((name != nullptr && (strlen(name) > 0)) && (price > 0))
+                {
+                    strcpy(m_name, name);
+                    m_price = price;
+                    m_isTaxed = isTaxed;
+
+                    return true;
+                }
+                else
+                {
+                    init();
+                    return false;
+                }
+            } 
+    
+    - This function was working perfectly but it was not printing the ITEM NAME column as i wanted
+      it was overflowing the width of printing area.
+
+    After changes my set Function:
+            bool Item::set(const char *name, double price, bool isTaxed)
+            {
+                if ((name != nullptr && (strlen(name) > 0)) && (price > 0))
+                {
+                    strcpy(m_name, name);
+                    m_name[WIDTH_NAME] = '\0';
+                    m_price = price;
+                    m_isTaxed = isTaxed;
+
+                    return true;
+                }
+                else
+                {
+                    init();
+                    return false;
+                }
+            }
+    - The problem was comming because i was not giving the null terminator character at the end of
+      the string.
+
+3) In my display function of item module i was having the precision problems.
+   Even though i had set precision to 2 with cout.precision(2) it was not printing correctly.
+
+   Problem giving code:
+
+        int precisionNum = cout.precision();
+            cout.precision(2);
+
+            if (!isEmpty())
+            {
+                cout << "| ";
+                cout.width(WIDTH_NAME);
+                cout.fill('.');
+                cout.setf(ios::left);
+                cout << m_name;
+                cout << " | ";
+                cout.width(WIDTH_PRICE);
+                cout.setf(ios::right);
+                cout.fill(' ');
+                cout << m_price;
+                cout << " | ";
+                cout.width(WIDTH_TAX);
+                cout.setf(ios::right);
+                cout.fill(' ');
+                cout << (m_isTaxed ? "Yes" : "No");
+                cout << " |" << endl;
+                cout.unsetf(ios::right | ios::left);
+            }
+
+    - Then i tried another setf with fixed to specify it at 2 precision and it worked after that.
+
+    Working Code:
+
+            int precisionNum = cout.precision();
+            cout.precision(2);
+
+            if (!isEmpty())
+            {
+                cout << "| ";
+                cout.width(WIDTH_NAME);
+                cout.fill('.');
+                cout.setf(ios::left);
+                cout << m_name;
+                cout << " | ";
+                cout.width(WIDTH_PRICE);
+                cout.setf(ios::right | ios::fixed);
+                cout.fill(' ');
+                cout << m_price;
+                cout << " | ";
+                cout.width(WIDTH_TAX);
+                cout.setf(ios::right);
+                cout.fill(' ');
+                cout << (m_isTaxed ? "Yes" : "No");
+                cout << " |" << endl;
+                cout.unsetf(ios::right | ios::left | ios::fixed);
+            }
+
+4) Part 2 was smooth as it was copy paste and editing.
+---> My over confidance and just copy pasting wasted my 10 minutes to debug it.
+
+   I copied the set function and add function from the part 1 of the work shop but forgot to change 
+   data type for when.
+
+   My code was:
+
+            bool CalorieList::add(const char *food_name, int calories, bool when)       
+            
+                                                            
+            bool Food::set(const char *food_name, int calories, bool when)         
+           
+
+        - So what ever value of when i was passing from 1 to 4, it was printing 'breakfast' every time
+          I checked my switch-case statements and assignments. 
+        - again debugger's watch helped to watch the value of when and then i got the problem 
+          solved.
+
+  After Solving: 
+
+            bool CalorieList::add(const char *food_name, int calories, int when)    
+            
+                                                            
+            bool Food::set(const char *food_name, int calories, int when)
+
+
+_______________________________________________________________________________________________________________________
+
+- Overall, the workshop was good did with help of the notes and professor's guidance.
+  Did some silly mistakes that caused me to scrach my head.
+
+
+          
+
+    

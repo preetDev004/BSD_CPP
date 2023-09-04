@@ -1,0 +1,270 @@
+
+-------------------------------------------------
+******************* Learnings *******************
+-------------------------------------------------
+
+1) define a default constructor:
+        In this workshop i learned how to define a default constructor of a class.
+        Default constructor has the same name as the class and we use it to initialize
+        the safe values for an object of a class so it does not have any garbage values.
+
+        for example,
+        Canister::Canister()
+            {
+                this->m_contentName = nullptr;
+                this->m_height = 13.0;
+                this->m_diameter = 10.0;
+                this->m_contentVolume = 0.0;
+                this->m_usable = true;
+            }
+        - Whenever we will create an object of Canister class this default constructor automatically 
+          called (we do not have to call it) and the attributes of that object will be assigned to the
+          values that we have in the constructor.
+
+2) define custom constructors with different number of arguments:
+        In this workshop i learned how to define a custom constructor of a class.
+        It is same as the default constructor like having the name of class and
+        we use it to initialize the safe values for an object of a class so it does 
+        not have any garbage values. However, we provide arguments explicitly to
+        the constructor, so user gives or check some conditions and according to that 
+        it sets the values of the attributes of that object.
+
+        for example,
+
+            Canister::Canister(double diameter, double hieght) : Canister()
+                {
+                    if ((hieght >= 10 && hieght <= 40) && (diameter >= 10 && diameter <= 30))
+                    {
+                        this->m_height = hieght;
+                        this->m_diameter = diameter;
+                    }
+                }
+
+3) Delegating constructors:
+        In this workshop i learned how to delegate constructors.
+        Delegating constructors allow us to invoke one constructor from another constructor 
+        within the same class. It help us avoid code duplication by reusing common initialization logic.
+
+        for example, 
+
+            Canister::Canister(double diameter, double hieght, const char *contentName, double contentVolume) 
+                     : Canister(diameter, hieght)    
+                    {
+
+                        pour(contentName, contentVolume);
+                    }
+        
+        - Here, before the body(logic) of this constructor execute it will delegate the initialization to
+          custom define constructor Canister(diameter, hieght)  to set the attributes diameter and hieght
+          and then the body of this constructor will execute
+
+        - Delegating constructor allow us to reuse initialization code from the default/custom define constructor while adding
+          specific logic in the delegating constructor for custom behavior.
+
+4) define a destructor to prevent memory leaks:
+        In this workshop i learned and used destructors to prevent memory leaks.
+        Destructors are used to clean up the memory.
+        So when we create an object constructor calls itself similarly before the 
+        object of that class goes out of scope destructor calls.
+
+        - In destructor we delete the memory we have allocated in the life-span of the object
+         so when the object goes out of scope it does not cause memory leaks.
+
+        - We can define destructor in similar way of default constructor but it must start(preced) with '~'.
+          ~className();
+
+        for example,
+
+        Canister::~Canister()
+        {
+            delete[] this->m_contentName;
+        } 
+
+        - Here, in Canister we are dynamically allocating the content name which is an array of characters
+          so we have to delete the memory where its stored.
+
+5) use the reference of the current object:
+        The reference of the current object denoted by the keyword 'this', is a special pointer that 
+        holds the memory address of the current instance of a class. It allows us to access and manipulate
+        the attributes of the object from within its own member functions.
+
+        for example,
+
+        Canister& Canister::pour(Canister &src)
+            {
+                if (this->m_usable && src.m_usable)
+                {
+                    double spaceInCurrent = (this->getCapacity() - this->m_contentVolume);
+                    double volumeToAdd = src.m_contentVolume;
+                    double howMuch = (spaceInCurrent < volumeToAdd) ? spaceInCurrent : volumeToAdd;
+                    this->pour(src.m_contentName, howMuch);
+                    src.m_contentVolume -= howMuch;
+                    if (!(src.m_contentVolume))
+                        src.emptyAndWash();
+                }
+                    return *this;
+            }
+        
+        - Here, when we call this function on whichever instance of this class we have called its address will
+          automatically given to the function which we know as 'implicit parameter' which can be accessed in that
+          function with 'this' keyword. 
+
+
+
+----------------------------------------------------
+******************* Difficulties *******************
+----------------------------------------------------
+
+1) Delegating constructors:
+        As i was working for the first time with the delegating constructor i did not know how to use it.
+        I read the documentation so i got the idea how it works but still was not getting how to include it the workshop.
+        before including them my code was repeatative.
+
+                Canister::Canister()
+                {
+                    this->m_contentName = nullptr;
+                    this->m_height = 13.0;
+                    this->m_diameter = 10.0;
+                    this->m_contentVolume = 0.0;
+                    this->m_usable = true;
+                }
+            
+                Canister::Canister(double diameter, double hieght) 
+                {
+                    if ((hieght >= 10 && hieght <= 40) && (diameter >= 10 && diameter <= 30))
+                    {
+                        this->m_height = hieght;
+                        this->m_diameter = diameter;
+                    }
+                    else{
+                        this->m_contentName = nullptr;
+                        this->m_height = 13.0;
+                        this->m_diameter = 10.0;
+                        this->m_contentVolume = 0.0;
+                        this->m_usable = true;
+                    }
+                }
+
+        - Then i used delegating constructor for this and it looked like this and worked:
+
+                Canister::Canister()
+                {
+                    this->m_contentName = nullptr;
+                    this->m_height = 13.0;
+                    this->m_diameter = 10.0;
+                    this->m_contentVolume = 0.0;
+                    this->m_usable = true;
+                }
+                Canister::Canister(double diameter, double hieght) : Canister()
+                {
+                    if ((hieght >= 10 && hieght <= 40) && (diameter >= 10 && diameter <= 30))
+                    {
+                        this->m_height = hieght;
+                        this->m_diameter = diameter;
+                    }
+                }
+
+        - but for another time i used the same logic:
+                Canister::Canister(double diameter, double hieght, const char *contentName, double contentVolume)
+                        : Canister()
+                        {
+
+                            pour(contentName, contentVolume);
+                        }
+        - As i understand i was delegating it to the default constructor so i was not getting the correct values as 
+          i was converting it to default.
+        - Then i realised it when i watched the changes in the height & diameter and  then tried to do call it with another 
+          custom constructor and it worked.
+
+                Canister::Canister(const char *contentName, double contentVolume) : Canister()
+                {
+                    pour(contentName, contentVolume);
+                }
+                Canister::Canister(double diameter, double hieght,const char *contentName, double contentVolume) 
+                        : Canister(diameter, hieght)
+                {
+
+                    pour(contentName, contentVolume);
+                }
+
+2) Making new string:
+        in the part where i have to make new string, i spend roughly 10 mins on it and all because of i copy and paste the above lines.
+
+        Error code:
+        
+            char *newStr = new char[strlen(m_contentName) + strlen(what) + 17];
+                strcpy(newStr, "Mix of [");
+                strcpy(newStr, this->m_contentName);
+                strcpy(newStr, "] and [");
+                strcpy(newStr, what);
+                strcpy(newStr, "]");
+
+            - so, in my out put just single bracket(']')  was printing. i was staring the code and thought everything is right 
+              but the i realised that if i do 'strcpy' it removes the content which is there and then copy new in it.
+              so i have to concatinate the things in the new string after the first 'strcpy'.
+        
+        Code worked:
+        
+            char *newStr = new char[strlen(m_contentName) + strlen(what) + 17];
+                strcpy(newStr, "Mix of [");
+                strcat(newStr, this->m_contentName);
+                strcat(newStr, "] and [");
+                strcat(newStr, what);
+                strcat(newStr, "]");
+
+3) Part 2 printing:
+        Part 2 was straight forward until the printing.
+
+        - Even though which charcter to place where and where to have spaces everything were provided but still
+          i was not able to do it.
+
+        - I was stuck in the width. how much width we need to print, but after trial and error i found that 
+          where we have content we need to print 2 space so we have to minus 2 in it ans for others we take 
+          that spaces in count to print the characters extra two times.
+
+            cout << frame[0];
+            cout.width(width + 2);
+            cout.fill(frame[1]);
+            cout << "";
+            cout << frame[2] << endl;
+
+            cout << frame[7];
+            cout.width(width + 2);
+            cout.fill(' ');
+            cout << "";
+            cout << frame[3] << endl;
+
+            cout << frame[7];
+            cout << " ";
+            cout.width(width - 2);
+            cout.fill(' ');
+            cout << (this->content ? this->content : "");
+            cout << " ";
+            cout << frame[3] << endl;
+
+            cout << frame[7];
+            cout.width(width + 2);
+            cout.fill(' ');
+            cout << "";
+            cout << frame[3] << endl;
+
+            cout << frame[6];
+            cout.width(width + 2);
+            cout.fill(frame[5]);
+            cout << "";
+            cout << frame[4];
+
+4) getting a line with max 70 chars:
+        i googled for this part, i tried using loop with getchar but did not work so
+        from a bit searching and reading documentation i got to know about the function that 
+        cin have is getline 
+
+        - cin.getline(where to store , how many characters) will take that characters from input stream.
+
+          void Label::readLabel()
+            {
+                char read[MAX_LENGTH +1];
+                cin.getline(read, MAX_LENGTH +1);
+                this->content = new char[strlen(read) + 1];
+                strcpy(this->content, read);
+            }

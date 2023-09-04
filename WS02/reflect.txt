@@ -1,0 +1,201 @@
+
+--------------------------------------------------
+*************** Quetions - Answers ***************
+--------------------------------------------------
+
+Que : In the code above, you were instructed to overload the function read multiple times.
+      The parameter received by these overloads is called an out parameter. Do some research 
+      and explain what is an out parameter for a function and compare it with an in parameter.
+      In your code, can you identify any function that receives an in parameter? Justify your answer.
+
+Ans--> 
+    i) Out parameter: It is a parameter which gets modified when we call the function having it.
+                      so basically out parameter is when we pass parameter as a reference or a pointer 
+                      to the function and function changes its value and we get the change in the
+                      parameter variable itself so we do not have to make an extra local variable to 
+                      return the result of calculations.       
+
+    ii) Comparision with In parameter :
+                    - As we have learned, In parameter sends the copy of the variable not the variable 
+                      itself so the function cannot modify the original value of that variable while
+                      Out parameter is the opposite.
+                    - When we do changes in the "in parameter" it does not reflect(local variable) while 
+                      changes made on "out parameter" is visible.
+                    - In parameter is mainly pass by value or a reference with const keyword so it cannot 
+                      be modified in the function.
+
+    iii) In parameter in code:
+                    
+                    void display(const Employee& theEmployee)
+                        {
+                            cout << theEmployee.m_empNo << ": " << theEmployee.m_name << ", " 
+                                 << theEmployee.m_salary << endl;
+                        }
+
+                    - This Display function is an example of "in parameter" function as we are passing a reference
+                      with const keyword it specifies that the function cannot change the value of "theEmployee" which
+                      we are passing to it. which is one of the characteristics of "in parameter" functions   
+
+
+-------------------------------------------------
+******************* Learnings *******************
+-------------------------------------------------
+
+1) Dynamic memory allocation & dellocation:
+            - In this workshop i leared how to dynamic memory allocation for arrays and how it helps 
+              us to use less memory by using only the space needed.
+
+              example: Employee *tmp = new Employee[newSize]; 
+            - This created an array of type Employee called tmp with size calculated not hard-coded.
+
+            - Also dellocation of memory is very important if do not do it and lose the address it stays 
+              there and cause memory leak.
+
+2) Overload Functions: 
+            - In this workshop i also learned that we can make more than one function of the same Name
+              by differentciating them on their number of parameters or type of parameter.
+
+            - In this workshop we had three function with the same name "read" but all did somthing 
+              different than the other.
+                ---------------Helped to read a string(name)-------------
+                bool read(char *val)
+                {
+                    int result;
+                    result = std::fscanf(g_fptr, "%[^\n]\n", val);
+                    if (result)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                ---------------Helped to read employee number-------------
+                bool read(int &val)
+                {
+                    int result;
+                    result = std::fscanf(g_fptr, "%d,", &val);
+                    if (result)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                ---------------Helped to read employee salary-------------
+                bool read(double &val)
+                {
+                    int result;
+                    result = std::fscanf(g_fptr, "%lf,", &val);
+                    if (result)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+3) create and use reference:
+            - I learned about reference that how they contain the original memory block and change
+              in the reference varible's value reflect the change in the original variable on which
+              the reference made.
+
+            - I also understood that reference helps us to not make any copies of original variable.
+
+----------------------------------------------------
+******************* Difficulties *******************
+----------------------------------------------------
+
+1) Part 1: load function iterations 
+    - I struggled in getting data repeatedly, when i used below for loop:
+        for (int i = 0; i < newSize; i++)
+			{
+				load(tmp[i]);
+			}
+    - I was iterating from zero but actually i wanted the data that is new not which is already 
+     there (not from 0 again).
+        for (int i = g_noOfEmployees; i < newSize; i++)
+			{
+				load(tmp[i]);
+			}
+    - worked for me.
+
+2) Part 1: the memory dellocation part.
+    - I spent almost 1 hour on one small error.
+    I) first my dellocation function was :
+            void deallocateMemory()
+                        {
+                            for (int i = 0; i < g_noOfEmployees; i++)
+                            {
+                                delete g_employees[i].m_name;
+                            }
+                            delete[] g_employees;
+                            g_employees = nullptr;
+                            g_noOfEmployees = 0;
+                        }
+            
+        - This function was giving me memory leaks error in valgrind. but i did not changed it i thought 
+          problem was in my load, i am not doing it in correct way.
+
+        - After looking up on the documentation that you have given i found my mistake that m_name is an array
+          and i was deleting as a normal variable which was causing it.
+
+    II) After correction my function:
+            void deallocateMemory()
+                        {
+                            for (int i = 0; i < g_noOfEmployees; i++)
+                            {
+                                delete[] g_employees[i].m_name;
+                            }
+                            delete[] g_employees;
+                            g_employees = nullptr;
+                            g_noOfEmployees = 0;
+                        }
+
+3) Part 2: I had problems in the read function.
+        - First I made two different read function to read the values from the file.
+          but it was not working, i dont know what was the problem may be it was because of the
+          delimeter.
+        
+        - Then, I made one single read function to read both in single time, but still my
+          logic was not right.
+
+          bool read(char *val,int& val1)
+                {
+                    int result;
+                    result = std::fscanf(g_fptr, "%*[^,],%d", val, &val1);
+                    if (result)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+        - After looking on the fscanf of part 1 of the workshop i got an idea that how it could
+          be done.
+          
+          bool read(char *val,int& val1)
+                {
+                    int result;
+                    result = std::fscanf(g_fptr, "%[^,],%d\n", val, &val1);
+                    if (result)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+        - It worked for me.
+
+--> Other then that i just had to copy and paste the function from the part 1 that you provided and 
+    needed to modify it.

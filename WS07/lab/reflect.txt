@@ -1,0 +1,204 @@
+
+-------------------------------------------------
+******************* Learnings *******************
+-------------------------------------------------
+
+1) inherit a derived class from a base class:
+
+    - In this workshop i learned to inherit a derived class from a base class.
+
+    class Truck : public MotorVehicle {
+        // class definition
+    };
+    - Here, Truck class is derived from the base class MotorVehicle. It inherits the member
+      variables and functions from the base class "MotorVehicle" and i added few new members
+      to the derived class.
+
+
+2) shadow a base class member function with a derived class member function:
+
+    - In this workshop we shadowed few function from the base class. To shadow a base class
+      member function with a derived class member function, we need to define a member function 
+      in the derived class with the same name and parameters as the base class member function.
+
+    istream &Truck::read(istream &in)
+    {
+        MotorVehicle::read(in);
+        cout << "Capacity: ";
+        in >> m_capacity; 
+        cout << "Cargo: ";
+        in >> m_cargoLoad;   
+        return in;
+    }
+
+    - By doing this, when we call the read function on an object of the derived class
+      Truck, it will use the implementation provided in the derived class instead of the base class.
+
+
+3) access a shadowed member function that is defined in a base class:
+
+    - In this workshop I also learned how to call a base class member function which is shadowed
+      in derived class. To access a shadowed member function that is defined in a base class, we
+      can use the scope resolution operator (::) along with the base class name to explicitly specify
+      which version of the function you want to call.
+
+        istream &Truck::read(istream &in)
+        {
+            MotorVehicle::read(in);
+
+            cout << "Capacity: ";
+            in >> m_capacity; 
+            cout << "Cargo: ";
+            in >> m_cargoLoad;   
+            return in;
+        }
+
+    - Here, we are explicitly specifing the call of read function which belongs to MotorVehicle 
+      and shadowed in the derived class Truck.
+      
+
+4) utilize custom input/output operators with these classes:
+
+
+    - In this workshop we overloaded insertion (<<) and exertion (>>) operators to perform input and
+      output with classes MotorVehicle and Truck.
+
+    ostream& operator<<(ostream& os, const MotorVehicle& vehicle) {
+
+            return vehicle.write(os);
+        }
+
+    istream& operator>>(istream& in, MotorVehicle& vehicle) {
+
+            return vehicle.read(in);
+        }
+    
+    ostream& operator<<(ostream& os, const Truck& truck) {
+
+            return truck.write(os);
+        }
+
+    istream& operator>>(istream& in, Truck& truck) {
+
+            return truck.read(in);
+        }
+
+    - In each operator overload we called the appropriate read or write member function of that 
+      perticular class to perform different operations like input and output.
+
+
+----------------------------------------------------
+******************* Difficulties *******************
+----------------------------------------------------
+
+
+1) "const" keyword error:
+
+    - I was working on the MotorVehicle module and each function was working fine until i made the
+      "<<" overload.
+
+    - I spend around 20 mins debuging the whole code but was not able to find the error.
+      Next day in the class professor explained the error to me and then i made it.
+
+    * Error function:
+
+        ostream& MotorVehicle::write(ostream& os) const{
+            os<< "| "<<m_yearBuilt<< " | "<<m_plateNum <<" | "<< m_currentAdd;
+            return os;
+        }
+
+        ostream& operator<<(ostream& os, MotorVehicle& vehicle) { ----- causing problem
+            return vehicle.write(os);
+        }
+    
+    * After solving:
+
+        ostream& MotorVehicle::write(ostream& os) const{
+            os<< "| "<<m_yearBuilt<< " | "<<m_plateNum <<" | "<< m_currentAdd;
+            return os;
+        }
+
+        ostream& operator<<(ostream& os, const MotorVehicle& vehicle) { -----  problem solved with "const"
+            return vehicle.write(os);
+        }
+
+    - So, basically my write function that i made was a query and i was calling that function here and as it 
+      was const the object must be const that i was getting as parameter.
+
+
+2) Calling the same function:
+
+    - So, in the Truck module i implemented the read function and it was giving me error, it was going into 
+      infinite loop.
+
+    - I spend 2-3 mins on re-tring it and reading the instruction.
+
+    * Code causing error:
+
+        istream &Truck::read(istream &in)
+        {
+            read(in); ------------- problematic line
+            cout << "Capacity: ";
+            in >> m_capacity; 
+            cout << "Cargo: ";
+            in >> m_cargoLoad;   
+            return in;
+        }
+
+    * Solved code:
+
+        istream &Truck::read(istream &in)
+        {
+            MotorVehicle::read(in);
+            cout << "Capacity: ";
+            in >> m_capacity; 
+            cout << "Cargo: ";
+            in >> m_cargoLoad;   
+            return in;
+        }
+
+    - As we shoadowed the function we had to explicitly specify which read function to call
+     and as i was not doing so the function was calling it self again and again.
+
+
+3) Cargo adding failure:
+
+    - I was tring to add cargo by implementing addCargo function and i did it but at few 
+      places where my cargo should be loaded and should return "cargo loaded" it was giving me 
+      "loading fail" and was not loading.
+
+    - It took me a while to realise that it is comming from the addCargo function as it was retunring
+      the true or false value.
+
+    * Error code:
+
+        bool Truck::addCargo(double cargo){
+                if ((m_cargoLoad + cargo) <= m_capacity)
+                {
+                    m_cargoLoad += cargo;
+                    return true;   
+                }
+                else{
+                    m_cargoLoad = m_capacity;
+                    return false;   
+                }
+        }
+
+    * Solved code:
+
+        bool Truck::addCargo(double cargo){
+            if(m_cargoLoad < m_capacity){
+                if ((m_cargoLoad + cargo) <= m_capacity)
+                {
+                    m_cargoLoad += cargo;
+                }
+                else{
+                    m_cargoLoad = m_capacity;
+                }
+                return true;   
+            }
+            return false;
+        }
+
+        - As I was not making it true when m_cargoLoad is assigned to max Capacity (m_capacity).
+      

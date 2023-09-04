@@ -1,0 +1,80 @@
+
+-------------------------------------------------
+******************* Learnings *******************
+-------------------------------------------------
+
+
+1) code function templates:
+
+    - In this workshop i learned about function templates. How to define then and how do they work.
+
+    - Function templates are generic functions capable of handling different data types without having written
+      code/implimentation for each type separately.
+
+    - To define a function template we use the keyword "template":
+
+        template <typename T>  
+
+        Here, typename could be any type and the variable name is "T" we use to work with it.
+
+    - We coded this function template in this workshop:
+
+            template <typename T>
+            void listArrayElements(const char *title, const T *objArr, int nElements)
+            {
+                std::cout << title << std::endl;
+                int i = 0;
+                while (i < nElements)
+                {
+                        std::cout << i + 1 << ": " << objArr[i] << std::endl;
+                        i++;
+                    
+                }
+            }
+            - In this function we are passing an T type objects array as pointer.
+              This T type could be any data type/custom type, as in this workshop we used
+              different custome types like car, student , and employee to work with.
+
+            - We did not implemente different function for all thew types as function template
+              helped us to create a generic implementation which work on the each type that we pass
+              on the function call.
+
+
+2) implement calls to function templates:
+
+    - In this workshop we also modified the tester file according to the need of template 
+      function call.
+
+    - We had three different arrays of objects of three custom types:
+            Car C[8] = { Car("GVFGHI", "Tesla Model S"), Car("ABCDEF", "BMW 320"), Car("CDEFGH", "Ford Festiva"), 
+                        Car("BCDEFG", "Ford Festiva"),Car("GVDGHI", "Tesla Model 3"), Car("EFGHIJ", "Nissan Maxima"), 
+                        Car("GVDEFG", "Tesla Model X") };
+
+            Student S[6] = { Student(23456, "Lisa Simpson",4.0),Student(45678, "Ralph Wiggum",2.1), Student(56789, "Milhouse Van Houten",4.0), 
+                        Student(67890, "Todd Flanders", 3.5), Student(34567, "Nelson Muntz",3.0),Student(12345, "Bart Simpson",1.5) };
+
+            Employee E[6] = { Employee(213456, "Carl Carlson", 62344.56,111), Employee(122345, "Mindy Simmons", 65432.44,222), 
+                        Employee(435678, "Lenny Leonard", 43213.22,111), Employee(546789, "Waylon Smithers", 654321.55,333), 
+                        Employee(657890, "Frank Grimes", 34567.88,333), Employee(364567, "Homer Simpson", 55432.11,111) };
+
+    - For, all this three we made only two function which was function templates so that can work with
+      each seamlessly.
+
+      i) listArrayElements("All the cars:", C, Cres.size());
+         search(Cres, C, Cres.size() , "Tesla");
+
+     ii) listArrayElements("All students:", S, Sres.size());
+         search(Sres, S, Sres.size(), 4.0);
+
+    iii) listArrayElements("All employees:", E, Eres.size());
+         search(Eres, E, Eres.size(), 111);
+
+
+
+----------------------------------------------------
+******************* Difficulties *******************
+----------------------------------------------------
+
+    - There was not any single problem that i faced in this workshop. As thi workshop was straight 
+      forward and easy to understand.
+

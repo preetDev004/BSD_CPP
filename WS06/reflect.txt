@@ -1,0 +1,276 @@
+
+-------------------------------------------------
+******************* Learnings *******************
+-------------------------------------------------
+
+1) define and create copy constructors:
+
+        A copy constructor is a special constructor that creates a new object by initializing it 
+        with an existing object of the same(TextFile) class. It is used to create a copy of an object.
+
+        TextFile::TextFile(const TextFile &other) : TextFile(other.m_pageSize)
+                {
+                    if (other.m_filename != nullptr)
+                    {
+                        setFilename(other.m_filename, true);
+                        other.saveAs(m_filename);
+                        setNoOfLines();
+                        loadText();
+                    }
+                }
+
+2) define and create copy assignment:
+
+        The copy assignment operator is used to assign the contents of one object to another object of
+        the same class. 
+
+        TextFile &TextFile::operator=(const TextFile &other)
+        {
+        if (this != &other) 
+        {
+            if (other.m_filename != nullptr)
+            {
+                other.saveAs(m_filename);
+                setNoOfLines();
+                loadText();
+            }
+        }
+        return *this;
+        }
+
+3) Prevent copying and assignment in a class:
+
+        To prevent copy assignment and copy assignment operator in C++, we can use keyword "delete" that 
+        restrict it work.
+
+        FROM MS1:
+            Menu(const Menu &other) = delete;
+            Menu &operator=(const Menu &other) = delete;
+
+4) Do simple file IO using ifstream and ofstream:
+
+        We use "ifstream" and "ofstream" objects to perform simple file operations like writing in the file
+        and extracting data from the file.
+
+        ifstream file(m_filename);
+        if (file.is_open())
+        {
+            delete[] m_textLines;
+            m_textLines = new Line[m_noOfLines];
+            unsigned i;
+            for (i = 0; i < m_noOfLines; i++)
+            {
+                string line;
+                getline(file, line);
+                m_textLines[i] = line.c_str();
+            }
+            m_noOfLines = i;
+            file.close();
+        }
+
+        ofstream file(fileName);
+        if (file.is_open())
+        {
+            for (unsigned i = 0; i < m_noOfLines; i++)
+            {
+                file << m_textLines[i] << endl;
+            }
+            file.close();
+        }
+
+5) use the C++ string class to extract an unknown number of characters from the input:
+
+        To extract an unknown number of characters from the input using the C++ string class, 
+        we can utilize the getline() function from the string class. This function reads characters
+        from the input until a delimiter (e.g., newline character) is encountered.
+
+        string line;
+        getline(cin, line);
+        
+
+----------------------------------------------------
+******************* Difficulties *******************
+----------------------------------------------------
+
+1) Saving the File content with a different name:
+
+        - we have to use saveAs function which has the implementation of copying the content.
+          in copy constructor and copy assignment operator where i was calling it i was not 
+          specifiing on which instance i am calling it.
+
+          TextFile::TextFile(const TextFile &other) : TextFile(other.m_pageSize)
+            {
+                if (other.m_filename != nullptr)
+                {
+                    setFilename(other.m_filename, true);
+                    saveAs(m_filename); ------------- causing error/not printing intended output
+                    setNoOfLines();
+                    loadText();
+                }
+            }
+
+            TextFile &TextFile::operator=(const TextFile &other)
+            {
+                if (this != &other)
+                {
+
+                    if (other.m_filename != nullptr)
+                    {
+                        saveAs(m_filename);  ------------- causing error/not printing intended output
+                        setNoOfLines();
+                        loadText();
+                    }
+                }
+                return *this;
+            }
+
+            - Then i realised that i am not giving the instance that i have to call it on the other instance coming 
+              through the argument.
+
+              I changed the line and which solved the error:
+                    other.saveAs(m_filename);
+
+2) Adding extra line:
+            My setNoOfLines function were setting noOfLines one extra then the file contained. As it was said 
+            we had to add extra line if last line not have the new line.
+
+            void TextFile::setNoOfLines()
+            {
+                ifstream file(m_filename);
+                if (file.is_open())
+                {
+                    char fchar;
+                    m_noOfLines = 0;
+                    while (file.get(fchar))
+                    {
+                        if (fchar == '\n')
+                        m_noOfLines++;
+                    }
+                        m_noOfLines++;
+                    file.close();
+                }
+                else
+                {
+                    setEmpty();
+                }
+            }
+
+            - To solve the error i used a condition to check if the last char of the file is '\n' or not 
+              and then i will add a new line.
+
+            void TextFile::setNoOfLines()
+                {
+                    ifstream file(m_filename);
+                    if (file.is_open())
+                    {
+                        char fchar;
+                        m_noOfLines = 0;
+                        while (file.get(fchar))
+                        {
+                            if (fchar == '\n')
+                            m_noOfLines++;
+                        }
+                        if (m_noOfLines > 0 && fchar != '\n') ---------- change that helped.
+                            m_noOfLines++;
+                        file.close();
+                    }
+                    else
+                    {
+                        setEmpty();
+                    }
+                }
+
+3) Hit Enter was printing one line before:
+
+        I had to print only the lines that pageSize says and then wait for user to hit Enter
+        So, i made this condition in a for loop.
+
+            for (unsigned i = 0; i < m_noOfLines; i++)
+                {
+                    ostr << m_textLines[i] << endl;
+                    if (i+1 > m_pageSize)
+                    {
+                    char ch;
+                    ostr << "Hit ENTER to continue...";
+                    cin.get(ch);
+                    }
+                }
+
+        - But this was only asking me one time to hit enter then i realised that i am not reseting the comparision
+          as once i grater then m_pageSize it should again start from the 0.
+          so, i made this condition which solved the problem.
+
+              for (unsigned i = 0; i < m_noOfLines; i++)
+                {
+                    ostr << m_textLines[i] << endl;
+                    if ((i + 1) % m_pageSize == 0)
+                    {
+                    char ch;
+                    ostr << "Hit ENTER to continue...";
+                    cin.get(ch);
+                    }
+                }
+
+4) Loading wrong lines:
+
+        - While i was loading the lines to the file i forgot to use c_str function to
+          the line i was getting as input.
+          I spent 20 minutes figuring out what causing the error.
+
+          my load function before:
+                void TextFile::loadText()
+                    {
+                        if (m_filename == nullptr)
+                            return;
+
+                        ifstream file(m_filename);
+                        if (file.is_open())
+                        {
+                            delete[] m_textLines;
+                            m_textLines = new Line[m_noOfLines];
+                            unsigned i;
+                            for (i = 0; i < m_noOfLines; i++)
+                            {
+                                string line;
+                                getline(file, line);
+                                m_textLines[i] = line; ------ cause problem
+                            }
+                            m_noOfLines = i;
+                            file.close();
+                        }
+                        else
+                        {
+                            setEmpty();
+                        }
+                    }
+            - I converted the String class style input to the C-style string which was done by c_str() function
+            and then my load functon worked perfectly as intended.
+
+            void TextFile::loadText()
+            {
+                if (m_filename == nullptr)
+                    return;
+
+                ifstream file(m_filename);
+                if (file.is_open())
+                {
+                    delete[] m_textLines;
+                    m_textLines = new Line[m_noOfLines];
+                    unsigned i;
+                    for (i = 0; i < m_noOfLines; i++)
+                    {
+                        string line;
+                        getline(file, line);
+                        m_textLines[i] = line.c_str(); ------- line solved problem
+                    }
+                    m_noOfLines = i;
+                    file.close();
+                }
+                else
+                {
+                    setEmpty();
+                }
+            }
+              
+
+

@@ -1,0 +1,193 @@
+
+-------------------------------------------------
+******************* Learnings *******************
+-------------------------------------------------
+
+1) define pure virtual functions:
+
+    - In this workshop i learned about pure virtual functions. we can create a 
+       pure virtual function by assigning a virtual function to value 0.
+
+    - in this workshop we created this two major "pure virtual function":
+
+        virtual void draw(std::ostream& os) const = 0;
+        virtual void getSpecs(std::istream& in) = 0;
+
+2) create abstract base classes:
+
+    - In this workshop i also worked with the abstract base class.
+
+    - When we define at least one pure virtual function in a class then the class becomes the 
+     abstract base class.
+
+    - In this workshop the Shape class was the abstract base class.
+
+    #ifndef SDDS_SHAPE_H
+    #define SDDS_SHAPE_H
+    #include <iostream>
+
+    namespace sdds{
+        class Shape{
+            public:
+            virtual void draw(std::ostream& os) const = 0;
+            virtual void getSpecs(std::istream& in) = 0;
+            virtual ~Shape();
+
+        };
+        std::ostream& operator<<(std::ostream& os, const Shape& shape);
+        std::istream& operator>>(std::istream& in, Shape& shape);
+    }
+
+    #endif
+
+3) implement behaviour using virtual functions:
+
+    - In this workshop we override the virtual function in the derived classes to get its implementation 
+     behaviour.
+
+     class LblShape: public Shape{
+        private:
+        char* m_label=nullptr;
+        
+        protected:
+        const char * label() const;
+
+        public:
+        LblShape() = default;
+        LblShape(const char* label);
+        ~LblShape();
+        LblShape(const LblShape& other) = delete;
+        LblShape& operator=(const LblShape& other) = delete;
+        void getSpecs(std::istream& in) override;
+
+    };
+
+    - Here, Shape class which has pure virtual function provided the interface to the LblShape class.
+     we override here the getSpecs function to provide its implementation.
+
+4) explain the difference between an abstract base class and a concrete class:
+
+    i) Abstract Base Class:
+
+        - it serves as a blueprint or interface for other classes.
+
+        - It contains one or more pure virtual functions, which are declared with the = 0
+          syntax in C++. These functions have no implementation in the abstract base class and
+          must be overridden by derived classes.
+
+        - Abstract base classes are used to define a common interface that derived classes must
+          adhere to. They establish a contract that derived classes must fulfill.
+
+        - Objects cannot be created directly from an abstract base class.
+
+    ii) Concrete Class:
+
+        - concrete class is a regular class that can be instantiated directly to create objects.
+
+        - It may or may not have virtual functions, but if it does, they are not pure virtual.
+         Concrete classes may provide default implementations for virtual functions, and
+         derived classes can override them if necessary.
+
+        - Concrete classes provide specific functionality and have complete implementations 
+          of all their member functions.
+
+        - Objects can be created directly from concrete classes using their constructors.
+
+
+----------------------------------------------------
+******************* Difficulties *******************
+----------------------------------------------------
+
+1) Draw function error:
+
+    - This workshop was easy comparitively i just got few errors in the formating of the draw function.
+
+    So, my output was not having the hieght it means the box was not printing with the spaces.
+
+    My code was:
+            void Rectangle::draw(std::ostream &os) const
+            {
+                if (m_width > 0 && m_height > 0)
+                {
+                    char fillChar = os.fill();
+                    os << '+';
+                    os.width(m_width - 1);
+                    os.fill('-');
+                    os << '+' << endl;
+
+                    os << "|" << label();
+                    os.width(m_width - 1 - (int)strlen(label()));
+                    os.fill(' ');
+                    os << '|' << endl;
+
+                    os << '|';
+                    os.width(m_width - 1);
+                    os.fill(' ');
+                    os << '|' << endl;
+                
+                    os << '+';
+                    os.width(m_width - 1);
+                    os.fill('-');
+                    os << '+';
+
+                    os.fill(fillChar);
+                }
+            }
+
+            - Here, i was not considering the hieght so then i realised that i have to print this as many times the 
+             hight is there.
+
+            My updated code:
+                    void Rectangle::draw(std::ostream &os) const
+                    {
+                        if (m_width > 0 && m_height > 0)
+                        {
+                            char fillChar = os.fill();
+                            os << '+';
+                            os.width(m_width - 1);
+                            os.fill('-');
+                            os << '+' << endl;
+
+                            os << "|" << label();
+                            os.width(m_width - 1 - (int)strlen(label()));
+                            os.fill(' ');
+                            os << '|' << endl;
+
+                            for (int i = 0; i < m_height - 3; ++i) ------ problem solved
+                            {
+                                os << '|';
+                                os.width(m_width - 1);
+                                os.fill(' ');
+                                os << '|' << endl;
+                            }
+
+                            os << '+';
+                            os.width(m_width - 1);
+                            os.fill('-');
+                            os << '+';
+
+                            os.fill(fillChar);
+                        }
+                    }
+
+2) Avoding Comma:
+
+    - In the getSpecs function when i was overriding it for the Rectangle module i got a problem to avoid 
+     to comma (',') entered.
+
+    - I thought of getline and tried different combinations of it and spend about 20 minutes to figure how 
+      to avoid comma between the values of hieght and width.
+
+    - Then i got an idea what if i use a local char variable to get that comma. i am no going to use that variable 
+      just store the comma char and avoid it. so i can scan or get the input of height and width correctly saperated 
+      by the comma.
+
+      My final function:
+
+                void Rectangle::getSpecs(std::istream &in)
+                   {
+                        LblShape::getSpecs(in);
+                        char comma;
+                        in >> m_width >> comma >> m_height; ------ Problem solved!
+                        in.ignore();
+                    }

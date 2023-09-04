@@ -1,0 +1,316 @@
+
+-------------------------------------------------
+******************* Learnings *******************
+-------------------------------------------------
+
+1) Protected members of the class:
+
+    - In this workshop i used and learned about protected members of the class and how they serve.
+      In this workshop we created Text module which had one protected member function:
+    
+        const char &Text::operator[](int index) const
+            {
+                return m_content[index];
+            }
+
+    - To create attributes or members of a class protected we use "protected" label.
+
+        protected:
+            const char& operator[](int index)const;
+
+    - Protected attributes or members can be accessed within the class and the class which are 
+      derived from it.
+
+2) Re-used all the skills learned in cpp:
+
+    i) rules of three:
+
+            - In this workshop i created copy constroctor, copy assignment operator and destructor 
+              to copy the object and to manage the memory.
+
+            - Used deep coping to copy the data from the object.
+
+            Text(const Text& other);
+            Text& operator=(const Text& other);
+            ~Text();
+
+    ii) Virtual functions:
+
+            - In this workshop i created one write function which i made virtual so 
+              any child classes inheritted these methods automatically without having 
+              to redefine it again.
+
+              virtual void write(std::ostream& os)const;
+
+    iii) Derived class: 
+
+            - In this workshop i created the HtmlText class from the Text class.
+              I derived the HtmlText class as public from the Text module.
+              
+              class HtmlText : public Text
+                {
+                    char *m_title;
+
+                public:
+                    HtmlText(const char *filename = nullptr, const char *title = nullptr);
+                    HtmlText(const HtmlText &other);
+                    HtmlText &operator=(const HtmlText &other);
+                    ~HtmlText();
+                    virtual void write(std::ostream &os) const override;
+                };
+
+    iv) Override the implementation:
+
+            - In this worshop I override the logic or implementation of the virtual function write
+              That i created in the base class.
+
+              void write(std::ostream &os) const override; 
+
+              void HtmlText::write(std::ostream &os) const
+                {
+                    os << "<html><head><title>";
+                    if (m_title)
+                    {
+                        os << m_title;
+                    }
+                    else
+                    {
+                        os << "No Title";
+                    }
+                    os << "</title></head>\n<body>\n";
+
+                    if (m_title)
+                    {
+                        os << "<h1>" << m_title << "</h1>\n";
+                    }
+
+                    bool MS = false;
+                    int i = 0;
+                    while(((*this)[i] != '\0'))
+                    {
+                        char c = (*this)[i];
+
+                        switch (c)
+                        {
+                        case ' ':
+                            if (MS)
+                            {
+                                os << "&nbsp;";
+                            }
+                            else
+                            {
+                                MS = true;
+                                os << c;
+                            }
+                            break;
+                        case '<':
+                            os << "&lt;";
+                            MS = false;
+                            break;
+                        case '>':
+                            os << "&gt;";
+                            MS = false;
+                            break;
+                        case '\n':
+                            os << "<br />\n";
+                            MS = false;
+                            break;
+                        default:
+                            MS = false;
+                            os << c;
+                            break;
+                        }
+                        i++;
+                    }
+
+                    os << "</body>\n</html>";
+                }
+
+----------------------------------------------------
+******************* Difficulties *******************
+----------------------------------------------------
+
+1) Copy constructors:
+
+        - This workshop seemed easy as i have to just use the topics i have learned throught the
+          smester.
+
+        - WHen i was implimenting the copy assignment operator in the HtmlText class it was giving me some problems
+          some memory leaks and other errors.
+
+        - I spent about 10 mins to figure out what causing it and then i realise that when i am coping 
+          i was not coping the content of the Text class as its the base class i have to call its copy 
+          assigning operator.
+
+         * My code withe error:
+
+            HtmlText &HtmlText::operator=(const HtmlText &other)
+            {
+                if (this != &other)
+                {
+                    if (other.m_title!= nullptr)
+                    {
+                        delete[] m_title;
+                        m_title = nullptr;
+                        int len = strLen(other.m_title);
+                        m_title = new char[len + 1];
+                        strCpy(m_title, other.m_title);
+                    }
+                }
+                return *this;
+            }
+
+         * My code after solving the error:
+
+            HtmlText &HtmlText::operator=(const HtmlText &other)
+            {
+                if (this != &other)
+                {
+                    if (other.m_title!= nullptr)
+                    {
+                        Text::operator=(other); --------> problem solved
+                        delete[] m_title;
+                        m_title = nullptr;
+                        int len = strLen(other.m_title);
+                        m_title = new char[len + 1];
+                        strCpy(m_title, other.m_title);
+                    }
+                }
+                return *this;
+            }
+
+2) Getting the length of the file:
+
+        - When i was working with the write function of the HtmlText i needed to get all the characters
+          from the file. To loop through the file i need the length of the file.
+
+        - So, as in thi workshop we were given a getFileLength function which finds the length of the file 
+          and i tried to use it but as it was a private member of the base class cannot access it.
+
+         * My notworking code: 
+
+            void HtmlText::write(std::ostream &os) const
+            {
+                os << "<html><head><title>";
+                if (m_title)
+                {
+                    os << m_title;
+                }
+                else
+                {
+                    os << "No Title";
+                }
+                os << "</title></head>\n<body>\n";
+
+                if (m_title)
+                {
+                    os << "<h1>" << m_title << "</h1>\n";
+                }
+
+                bool MS = false;
+                for(int i = 0; i < Text::getFileLength(); i++)
+                {
+                    char c = (*this)[i];
+
+                    switch (c)
+                    {
+                    case ' ':
+                        if (MS)
+                        {
+                            os << "&nbsp;";
+                        }
+                        else
+                        {
+                            MS = true;
+                            os << c;
+                        }
+                        break;
+                    case '<':
+                        os << "&lt;";
+                        MS = false;
+                        break;
+                    case '>':
+                        os << "&gt;";
+                        MS = false;
+                        break;
+                    case '\n':
+                        os << "<br />\n";
+                        MS = false;
+                        break;
+                    default:
+                        MS = false;
+                        os << c;
+                        break;
+                    }
+                }
+
+                os << "</body>\n</html>";
+            }
+
+        - I realised that i have to find the different solution so, i spend around 5 mins on searching on google
+          i got the eof() which helps to find the end of file but then my mind striked and i got my 
+          solution myself.
+
+         * My solved code:
+
+            void HtmlText::write(std::ostream &os) const
+            {
+                os << "<html><head><title>";
+                if (m_title)
+                {
+                    os << m_title;
+                }
+                else
+                {
+                    os << "No Title";
+                }
+                os << "</title></head>\n<body>\n";
+
+                if (m_title)
+                {
+                    os << "<h1>" << m_title << "</h1>\n";
+                }
+
+                bool MS = false;
+                int i = 0;
+                while(((*this)[i] != '\0'))   ---> problem Solved
+                {
+                    char c = (*this)[i];
+
+                    switch (c)
+                    {
+                    case ' ':
+                        if (MS)
+                        {
+                            os << "&nbsp;";
+                        }
+                        else
+                        {
+                            MS = true;
+                            os << c;
+                        }
+                        break;
+                    case '<':
+                        os << "&lt;";
+                        MS = false;
+                        break;
+                    case '>':
+                        os << "&gt;";
+                        MS = false;
+                        break;
+                    case '\n':
+                        os << "<br />\n";
+                        MS = false;
+                        break;
+                    default:
+                        MS = false;
+                        os << c;
+                        break;
+                    }
+                    i++;
+                }
+
+                os << "</body>\n</html>";
+            }
+
+        - I searched fro the null termintor to get it.

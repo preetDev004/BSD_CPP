@@ -1,0 +1,137 @@
+
+--------------------------------------------------
+*************** Quetions - Answers ***************
+--------------------------------------------------
+1. what happens if you put the function main in the sdds namespace?
+
+Ans--> "main" function is the entry point of the code, when compilation starts of the program
+       the compiler search for the main funtion but if I have put the main function into sdds
+       namespace then compiler might give an error as it cannot find it in global scope
+       unless we give specification with the resolution operator.
+
+       To compile the program successfully that have main function into the sdds namespace we need
+       to add the resolution operator to the main function. For example, "sdds::main()", this will work 
+       perfectly according to my understanding.
+
+2. what are the benefits of putting the code into multiple modules instead of putting everything in a single file?
+
+Ans--> As I learned in C programming and now in the first workshop of C++ I got to know several pros of having 
+       multiple modules (moduler programming):
+
+       a) Maintainability: Dividing whole code in smaller modules helped us to organize the code well.
+                           Even if we needed to make changes we just had to make it in one single module.
+                           In Each module we can focus on a specific task or functionality that we have to
+                           achieve which helped us to code clean.
+
+       b) Reusability    : Making different modules for different task helped us to code less as we do
+                           not have to write the same code again and again. we can simply use the same 
+                           module when we need that functionality. This saves development time and effort and
+                           also maintain the DRY(Don't Repeat Yourself) concept.
+
+       c) Debugging Ease : It helps us to debug the code very well and we can find out in which perticular 
+                           module we have problem as it reduces the complexity of the project.
+
+       d) Testing Ease   : It becomes easier to test different modules as we can include them saperately
+                           and check if their functionality is working properly or not.
+                           
+       e) Encapsulation  : It also hides the logic/implementation of the module from other modules which 
+                           helps to restrict the access of it from other modules.
+
+-------------------------------------------------
+******************* Learnings *******************
+-------------------------------------------------
+
+1) In this module I leared about the Header guards that how it help the re-defination or inclusion
+   of a file.
+   For example,
+
+   #ifndef SDDS_FILE_H
+   #define SDDS_FILE_H
+   // Your header file content goes here
+   #endif
+
+   This Above lines i included in File.h file so whenever i include file.h file it first check that if its already
+   defined if it is then it will not include it but if not then it will define it.
+
+2) In this module I leared about the benifits of using multiple modules which I disccussed above.
+
+3) In this module I also learned about the namspaces in cpp and how it works.
+   - we used and learned that namespaces are used to group variables, functions, structures etc.
+   - Namespaces allowed us to create more than one functions, variables, structures of same name.  
+     like in this workshop we created sdds namespace and difined & declared all the variables, function, structures
+     in it and used it.
+   - when we need to use a function or variables of that name space we use resolution operator to specify it.
+     For example, bool sdds::saveList() or we say using namespace sdds; before using it.
+
+----------------------------------------------------
+******************* Difficulties *******************
+----------------------------------------------------
+
+1) In part 1 of the workshop i did not faced any problems as the code was given and I had to follow
+   the instruction to do it.
+
+2) part 2 was also good but i faced problems while making the strStr function.
+  - in this function when i was iterating through the original string i ended up changing its value.
+
+  while (*haystack != '\0')
+        {
+            while (*haystack == *needle && *haystack != '\0' && *needle != '\0')
+            {
+                haystack++;
+                needle++;
+            }
+            if (*needle == '\0') 
+                return haystack;
+
+            needle++; 
+        }
+ - Then i made its copy into another variables
+
+ while (*haystack != '\0')
+        {
+            char *s1 = haystack;
+            char *s2 = needle;
+            while (*s1 == *s2 && *s1 != '\0' && *s2 != '\0')
+            {
+                s1++;
+                s2++;
+            }
+            if (*s2 == '\0')
+
+            haystack++;
+        } 
+
+- When i tried to compile this code compiler gave me error then i found that a const char* must be
+  stored in to the const char* it is not possible to store it in char*
+
+  so, my final code looked like,
+  while (*haystack != '\0')
+        {
+            const char *s1 = haystack;
+            const char *s2 = needle;
+            while (*s1 == *s2 && *s1 != '\0' && *s2 != '\0')
+            {
+                s1++;
+                s2++;
+            }
+            if (*s2 == '\0') 
+                return haystack;
+
+            haystack++;
+        }
+
+----> But todo the part2 i had to read concepts of pointer and i got to know about somthing new that
+      might be not new for everyone but it is for me.
+      So, if we are getting a string through a pointer like here haystack had string and here again if i 
+      derefrence it like *haystack then it gave me the first character of string.
+   
+
+
+
+
+
+
+
+
+
+

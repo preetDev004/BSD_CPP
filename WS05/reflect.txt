@@ -1,0 +1,334 @@
+
+--------------------------------------------------
+*************** Quetions - Answers ***************
+--------------------------------------------------
+
+
+1) Why the prefix increment operator can return by reference, but the postfix increment 
+   operator can only return by value? Do some experiments and report the result.
+    -> The prefix increment operator modifies the current object directly and then returns a reference to it.
+       This allows the user to chain multiple increment operations together, like ++x1; ++x2; ++x3;. 
+       By returning a reference, the modified object is accessible, and subsequent operations can be 
+       performed on it. 
+
+    -> But, the postfix increment operator needs to return the original (unmodified) object as a value 
+       before performing the increment operation. This is because the postfix operator must yield the value
+       before the increment to allow expressions like (a++ + b); where the original value of a is used in the 
+       computation, but a is still incremented afterward.
+
+    -> If we send refrence of local variable that can cause the problem and if send the refrence of the
+       current instance it is same like the prefix firect change but the work for postfix is different 
+       so that is why we need object before change to do other computation.
+
+
+2) Why the += can return by reference, but the + operator cannot?
+    -> The += operator is an assignment operator that performs addition and assignment in
+       a single operation. It modifies the left-hand side(original) operand and returns a reference to
+       the modified object. so, object is not out of scope. 
+
+    -> But, the + operator is used for performing addition between two operands. It is not an assignment 
+       operator and is not expected to modify its operands. The operator returns a new object that represents
+       the sum of the two operands. As it creates a new object, it is typically a local object and sending 
+       a refrence of a local object is not good as it goes out of scope its value is also gone and if
+       we try to access that value it will give error. Therefore, we send the copy of the value.
+
+3) How did you prevent the conversion operators/casting constructors to be used in automatic conversions?
+    -> we can prevent automatic conversions having conversion operators and casting constructors by
+       using the "explicit" keyword. By marking a conversion function/constructor as explicit, 
+       we indicate that the conversion should only be performed explicitly by calling it
+       and compilor should not use it automatically.
+
+4) Why the helper operators in this workshop cannot be implemented as members? Discuss.
+    -> We made helper operators because when we make a member helper its one parameter gets fixed
+       which id the current instance and in this workshop we needed to control the types of both the
+       operands which is not possible if its a member operator so that is whay we made it helper.
+
+       For example:
+           double operator+(double amount, const Account &acc)
+                {
+                    if ((bool)acc)
+                        return amount + (double)acc;
+
+                    return 0.0;
+                }
+            - if this was a member operator then it would have shown errors of too many arguments and 
+              we would not be able to achieve the goal.
+            - Here, it can return a double type value working on the explicit parameters provided.
+
+-------------------------------------------------
+******************* Learnings *******************
+-------------------------------------------------
+
+1) define and create binary member operator:
+    -> In this Workshop i learned about the binary member operators and how they work.
+       I learned that how overloading an operator can help us.
+
+    -> Binary operators need two operands, while overloading a binary operator we need to take care 
+       that it is member of class or not.
+
+    ->  if it is member of class so it gets one parameter implicit which is the current instance so
+        we can not pass more than one arguments:
+
+        Account& operator=(int number);  // Overloaded assignment operator for account class
+
+        - Here, this operator gets two operands one is the current instance of "Account" class and second 
+        is the parameter(int number).
+
+        - This overloaded assignment operator checks the validity of current instance and the argument passed
+        and assigns the value to the balance of the current instance and returns the current instance.
+
+        code:
+        Account &Account::operator=(int number)
+            {
+                if (number >= 100000 && number <= 999999)
+                {
+                    if (this->m_number == 0 && this->m_holderName[0] != '\0')
+                        this->m_number = number;
+                }
+                return *this;
+            }
+
+2) define and create a type conversion operator:
+    -> In C language we have learned about the typecasting of in-built types but what about type
+       conversion of custom type for that we overload the type conversion operators which I learned
+       in this workshop.
+
+    -> In this workshop, at several places I need to check the validity of the object so every time 
+       writing the same conditions is not a proper approch so I created a conversion-to-bool operator 
+       which gives me either true or false depending upon the object of the class if it is valid
+       then it will give me true otherwise false.
+
+       Account::operator bool() const
+            {
+                if ((this->m_holderName[0] != '\0') &&
+                    (this->m_number >= 100000 && this->m_number <= 999999))
+                    return true;
+
+                return false;
+            }
+        - so, whenever i have to check the validity of any object of class Account i just do (bool)object.
+          it helps me to convert the object into bool and do other work and i also DO NOT REPEAT myself 
+          to writing the same conditions again and again.
+
+3) define and a create unary member operator:
+    -> As I learned about the creation and use of binary member operators same way I also studied it
+       for unary operators like !, and ++ , -- both prefix and postfix operators.
+
+    -> Unary operators requires only one operand as unary member operator is a member of class it has one implicit
+       parameter which is the current instance so no explicit parameters required.
+
+    -> In this workshop I made negation operator's overload to make my work easy for checking the validity
+       of the object.
+
+       bool Account::operator!() const
+            {
+                return (!((bool)*this));
+            }
+        - I used type conversion operator to create this operator so it will check the validity of the object and
+          will give me the true or false value upon it.
+
+4) define and create a helper operator between a primitive type and a class:
+    -> In this workshop we needed to work with two objects of the same class and the built-in types
+       for that we made helper binary operators.
+
+    -> This helper operators help us to avoid the implicit parameter so we can have more than one argument,
+       this helper functions can only access the class data provided in the explicit arguments which 
+       helps us to simplify our work.
+
+    -> we made:
+       double operator+(double amount, const Account &acc)
+        {
+            if ((bool)acc)
+                return amount + (double)acc;
+
+            return 0.0;
+        }
+        - This is the addition helper operator help us to check the valid object and return the new calculation 
+          value.
+
+        - By not making this operator a member helped us to achieve a flexible approch in which we can return 
+          the value of any type we want, we do not have implicit parameter so not to worry about parameter count
+          and just make the logic as we want.
+
+5) 'explicit' keyword:
+    -> In this workshop i learned about a new keyword in cpp which is explicit.
+       so when we created type conversion operators compilor was automatic converting into 
+       different types as it was not specified when to use it or not.
+
+    -> then we learned about "explicit" which we put on the prototype of the type conversion operator like:
+        explicit operator const char *() const;
+        explicit operator int() const;
+        explicit operator double() const;
+        explicit operator bool() const;
+
+        - So, whenever we need any of them we call them explicitly.
+         like,
+         if ((bool)acc)
+            return amount + (double)acc;
+        
+
+----------------------------------------------------
+******************* Difficulties *******************
+----------------------------------------------------
+
+
+1) Insertion operator:
+    -> I started this workshop's part 1 when it was released.
+       I made all the member operators correctly as per the instruction were given 
+       and all the test were successful except the last one. The last table was not printing 
+       correctly.
+       
+       - my code was:
+            Account &Account::operator<<(Account &acc)
+                {
+                    if ((bool)*this && (bool)acc)
+                    {
+                        this->m_balance += acc.m_balance;
+                        acc.m_balance = 0.0;
+                    }
+                    return *this;
+                }
+
+    * it should be printed like:
+        T8: Testing insertion/extraction operators
+        ==========:==========:==========:==========:==========
+        --------------------------------------
+        | Name       |   Number |    Balance |
+        --------------------------------------
+        | Cornel     | 00123456 |     500.00 |
+        | Vanessa    | 00654321 |    5000.00 |
+        | Cornel     | 00123456 |     500.00 |
+        | Vanessa    | 00654321 |    5000.00 |
+        | Cornel     | 00123456 |     500.00 |
+        | Vanessa    | 00654321 |    5000.00 |
+        | Cornel     | 00123456 |    5500.00 |
+        | Vanessa    | 00654321 |       0.00 |
+        | Cornel     | 00123456 |       0.00 |
+        | Vanessa    | 00654321 |    5500.00 |
+        --------------------------------------
+    
+    * But it was printing:
+        T8: Testing insertion/extraction operators
+        ==========:==========:==========:==========:==========
+        --------------------------------------
+        | Name       |   Number |    Balance |
+        --------------------------------------
+        | Cornel     | 00123456 |     500.00 |
+        | Vanessa    | 00654321 |    5000.00 |
+        | Cornel     | 00123456 |       0.00 |
+        | Vanessa    | 00654321 |       0.00 |
+        | Cornel     | 00123456 |       0.00 |
+        | Vanessa    | 00654321 |       0.00 |
+        | Cornel     | 00123456 |       0.00 |
+        | Vanessa    | 00654321 |       0.00 |
+        | Cornel     | 00123456 |       0.00 |
+        | Vanessa    | 00654321 |       0.00 |
+        --------------------------------------
+
+        - I spent 30-40 minutes finding the bug but i failed to do so, then i opened the tester file and 
+          and see what is happening because from my side my code looked perfect as per the summary.
+          I saw that in tester while T8 was happening it was adding the same instance in it.
+          like: (acc1 << acc1).display(); // no change, print acc1
+		        (acc2 >> acc2).display();
+
+           Then i saw that i do not have any condition to save the changes(it was changing the balance to 0)
+           if the both the instances comes same so then i additionally put a condition to solve the problem.
+
+           -> My final code:
+                Account &Account::operator<<(Account &acc)
+                    {
+                        if ((bool)*this && (bool)acc && this->m_number != acc.m_number)
+                        {
+                            this->m_balance += acc.m_balance;
+                            acc.m_balance = 0.0;
+                        }
+                        return *this;
+                    }
+
+
+2) postfix operator:
+    -> I made my postfix operator upon the summary an requirements that were given.
+       but i did not know what is the bug and why its giving error.
+
+       My code was:
+            const Account Account::operator++(int)
+                {
+                    Account localObj;
+                    localObj = ++(*this);
+                    return localObj;
+                }
+            - I wasted 6-7 minutes to see where the error is, i saw the documentation in which i got
+              the answer and my code worked.
+        
+        After solution:
+            const Account Account::operator++(int)
+                {
+                    Account localObj = *this;
+                    ++(*this);
+                    return localObj;
+                }
+            - I was wondring why this assigning made the problem then i looked my notes and thing professor
+              said in the lecture that if we create an object but do not directly assign it the value of this then 
+              it calls the constructor and after constructor call if we try to set the value it creates the problem.
+
+
+3) checking if the number has 6 digits or not:
+    -> So, in the part 1 when we set the number of the Account class's object we need to check if the 
+       number has 6 digits or not.
+    
+    -> I spend almost 10-15 mins on searching and trying how to achieve it.
+       I ended up on a google search that says use string library and its to_string function
+       and then use strlen to see its length is greater than 6 or not.
+
+       if(strlen(to_string(number)) == 6){
+        this->m_number = number;
+       }
+    
+    -> But this was not working in the case where i had decimal values. So, i thought that what is the range of
+       6 digits numbers its 100000 to 999999 inclusive.
+       So, i simply put that in the condition:
+
+       if (number >= 100000 && number <= 999999)
+            {
+                this->m_number = number;
+            }
+
+        - It worked for all values of numbers.
+
+4) Extra checks caused errors:
+    -> Part 2 was simple and straight farward but i did some silly mistakes from my side.
+       As we do in every workshop, the validity check for the object, i did in this workshop
+       as well.
+
+    -> This validity check that posed was not for every function.
+
+    My code was:
+            Mark::Mark(int value)
+            {
+                if (this->mark >= 0 && this->mark <= 100)
+                    this->mark = value;
+            }
+            Mark &Mark::operator=(int name)
+            {
+                if (this->mark >= 0 && this->mark <= 100)
+                    this->mark = name;
+                return *this;
+            } 
+
+        - This was restricting tester file to set its values to invalid and ultimately was affecting my output
+          because whenever tester file tried to assign a value it did not work becase of this condition and then 
+          i realised that this condition should not be in every function.
+
+        - In constructor and in assignment operator we set the value whatevr it is and then while doing
+          other opresions we work according to that.
+
+    My final code:
+            Mark::Mark(int value)
+            {
+                this->mark = value;
+            }
+            Mark &Mark::operator=(int name)
+            {
+                this->mark = name;
+                return *this;
+            }
